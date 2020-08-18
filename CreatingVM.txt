@@ -1,0 +1,22 @@
+# set default resource group 
+az configure --defaults group=learn-13f519b3-4c4b-4346-92c2-90746cafeda7
+# Create a Windows server Datacenter VM thats running IIS.
+az vm create \
+    --name MyWindowsVM1 \
+    --image Win2019Datacenter \
+    --admin-username azureuser
+az vm extension set \
+    --name CustomScriptExtension \
+    --vm-name MyWindowsVM1 \
+    --publisher Microsoft.Compute \
+    --settings '{"commandToExecute":"powershell Add-WindowsFeature Web-Server; Add-Content -Path \"C:\\inetpub\\wwwroot\\Default.htm\" -Value $(hostname)"}'
+
+#Opening the port 80 to Webserver.
+az vm open-port \
+    --name MyWindowsVM1 \
+    --port 80
+# Find the public IP Address of the New VM
+echo http://$(az vm list-ip-addresses \
+             --name MyWindowsVM1 \
+             --query "[].virtualMachine.network.publicIpAddresses[*].ipAddress" \
+             --output tsv)
